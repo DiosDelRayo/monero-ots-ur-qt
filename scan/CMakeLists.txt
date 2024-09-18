@@ -1,12 +1,10 @@
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
-
-if (QT_VERSION_MAJOR EQUAL 6)
-    find_package(Qt6 COMPONENTS Core Gui Widgets MultimediaWidgets QUIET)
-else()
-    find_package(Qt5 COMPONENTS Core Gui Widgets MultimediaWidgets REQUIRED)
-endif()
+message(STATUS "Qt VERSION: ${QT_VERSION}")
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets LinguistTools)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets LinguistTools)
+# find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Gui Widgets MultimediaWidgets REQUIRED)
 find_package(ZXing REQUIRED)
 
 set(URSCAN_SOURCES
@@ -36,4 +34,5 @@ target_link_libraries(urscan PUBLIC
     Qt::Widgets
     Qt::MultimediaWidgets
     ZXing::ZXing
+    bcur
 )
