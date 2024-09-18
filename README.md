@@ -1,7 +1,7 @@
-# UR/QR Code library for Qt5/6 (and Qt Quick)
+# Monero Offline Signing UR/QR Code library for Qt5/6 (also for Qt Quick)
 
 This library is meant to enable quick displaying and
-scanning QR/UR codes for Offline Transaction Signing.
+scanning QR/UR codes for Offline Transaction Signing for Monero.
 
 It brings everything needed with it, most of the source
 is stolen from [Feather Wallet](https://featherwallet.org),
