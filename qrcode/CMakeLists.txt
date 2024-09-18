@@ -5,7 +5,13 @@ set(QRCODE_HEADERS
     QrCode.h
     QrCode_p.h
 )
-find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Gui Widgets MultimediaWidgets Svg REQUIRED)
+
+if (QT_VERSION_MAJOR EQUAL 6)
+    find_package(Qt6 COMPONENTS Core Gui Widgets MultimediaWidgets Svg QUIET)
+else()
+    find_package(Qt5 COMPONENTS Core Gui Widgets MultimediaWidgets Svg REQUIRED)
+endif()
+message("qrcode Qt version: " + ${QT_VERSION})
 
 add_library(qrcode STATIC ${QRCODE_SOURCE} ${QRCODE_HEADERS})
 target_include_directories(qrcode PUBLIC 
