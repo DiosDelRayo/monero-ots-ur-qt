@@ -11,7 +11,7 @@ if (QT_VERSION_MAJOR EQUAL 6)
 else()
     find_package(Qt5 COMPONENTS Core Gui Widgets MultimediaWidgets Svg REQUIRED)
 endif()
-message("qrcode Qt version: " + ${QT_VERSION})
+message("qrcode Qt version: " ${QT_VERSION})
 
 add_library(qrcode STATIC ${QRCODE_SOURCE} ${QRCODE_HEADERS})
 target_include_directories(qrcode PUBLIC 
