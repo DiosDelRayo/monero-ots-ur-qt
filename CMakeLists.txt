@@ -1,23 +1,24 @@
 cmake_minimum_required(VERSION 3.10)
-project(libur VERSION 0.1 LANGUAGES C CXX)
+project(libotsur VERSION 0.1 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 option(USE_EXTERNAL_QRENCODE "Use an external qrencode library" OFF)
+option(OTSUR_WITH_QTQUICK "Use  with QtQuick" OFF)
 
 add_subdirectory(bcur)
 add_subdirectory(display)
 add_subdirectory(scan)
 add_subdirectory(qrcode)
-add_subdirectory(framestate)
+# add_subdirectory(framestate)
 
 if(NOT DEFINED USE_EXTERNAL_QRENCODE OR NOT USE_EXTERNAL_QRENCODE)
     add_subdirectory(qrencode)
 endif()
 
-if (DEFINED UROTS_WITH_QTQUICK AND UROTS_WITH_QTQUICK)
+if (DEFINED OTSUR_WITH_QTQUICK AND OTSUR_WITH_QTQUICK)
     add_subdirectory(qtquick)
     # add_subdirectory(components)
     if (QT_VERSION_MAJOR EQUAL 6)
