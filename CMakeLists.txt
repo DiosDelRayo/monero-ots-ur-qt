@@ -17,7 +17,7 @@ add_subdirectory(framestate)
 if(NOT DEFINED USE_EXTERNAL_QRENCODE OR NOT USE_EXTERNAL_QRENCODE)
     add_subdirectory(qrencode)
 endif()
-
+message("With QtQuick: " ${OTS_UR_WITH_QTQUICK})
 if (DEFINED OTS_UR_WITH_QTQUICK AND OTS_UR_WITH_QTQUICK)
     add_subdirectory(qtquick)
     # add_subdirectory(components)
