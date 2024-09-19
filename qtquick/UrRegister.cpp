@@ -1,16 +1,26 @@
 #include "UrRegister.h"
 
-#include <QQmlEngine>
-#include "../display/UrWidget.h"
-#include "../display/QrWidget.h"
-#include "../scan/ScanWidget.h"
+#include <QQmlApplicationEngine>
+#include "UrReceiver.h"
+#include "UrSender.h"
+#include "UrImageProvider.h"
+#include "qqmlcontext.h"
 
-namespace UrRegister {
+namespace OtsUr {
+    static UrSender* _urSender = nullptr;
+
 	void registerTypes()
 	{
-		qmlRegisterType<UrWidget>("UrOts", 0, 1, "UrWidget");
-		qmlRegisterType<QrWidget>("UrOts", 0, 1, "QrWidget");
-		qmlRegisterType<ScanWidget>("UrOts", 0, 1, "ScanWidget");
-	}
+		qmlRegisterType<UrReceiver>("OtsUr", 0, 1, "UrReceiver");
+		qmlRegisterType<UrSender>("OtsUr", 0, 1, "UrSender");
+    }
+
+    void setupContext(QQmlApplicationEngine &engine) {
+        UrImageProvider *urcodeImageProvider = new UrImageProvider();
+        UrSender *urSender = new UrSender();
+        urcodeImageProvider->setSender(urSender);
+        engine.addImageProvider("urcode", urcodeImageProvider);
+        engine.rootContext()->setContextProperty("urSender", urSender);
+    }
 }
 
