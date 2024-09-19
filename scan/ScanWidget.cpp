@@ -132,7 +132,8 @@ void ScanWidget::startCapture(bool scan_ur) {
         return;
     }
     
-    this->onCameraSwitched(0);
+    this->onCameraSwitched(0); // TODO: should go to the last used IMO
+    // ui->combo_camera->setCurrentIndex(0); // TODO: and then set in the list box too
     
     if (!m_thread->isRunning()) {
         m_thread->start();
@@ -271,14 +272,13 @@ void ScanWidget::onCameraSwitched(int index) {
     if (m_camera->exposure()->isExposureModeSupported(QCameraExposure::ExposureBarcode)) {
         qDebug() << "Barcode exposure mode is supported";
     }
-    connect(m_camera.data(), &QCamera::statusChanged, [this](QCamera::Status status){
+    connect(m_camera.data(), &QCamera::statusChanged, [this](QCamera::Status status) {
         bool active = (status == QCamera::ActiveStatus);
         ui->frame_error->setText("Lost connection to camera");
         ui->frame_error->setVisible(!active);
         if (!active)
             qDebug() << "Lost connection to camera";
     });
-#endif
     connect(m_camera.data(), QOverload<QCamera::Error>::of(&QCamera::error), [this](QCamera::Error error) {
         if (error != QCamera::Error::CameraError)
             return;
@@ -286,6 +286,7 @@ void ScanWidget::onCameraSwitched(int index) {
         ui->frame_error->setVisible(true);
         qDebug() << QString("Error: %1").arg(m_camera->errorString());
     });
+#endif
 
     m_camera->start();
     emit cameraSwitched(index);
