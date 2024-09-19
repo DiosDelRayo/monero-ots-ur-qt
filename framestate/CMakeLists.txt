@@ -15,7 +15,7 @@ add_library(framestate STATIC ${FRAMESTATE_SOURCE} ${FRAMESTATE_HEADERS})
 target_include_directories(framestate PUBLIC 
     ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(framestate PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::Widgets
+    Qt${QT_VERSION_MAJOR}::Core
+    Qt${QT_VERSION_MAJOR}::Gui
+    Qt${QT_VERSION_MAJOR}::Widgets
 )
