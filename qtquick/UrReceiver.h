@@ -14,10 +14,9 @@ class UrReceiver : public QObject
 	Q_OBJECT
 
 public:
-	explicit UrReceiver();
+    UrReceiver();
 	~UrReceiver() override;
     
-    void startCapture(bool scan_ur = false);
     void reset();
     void stop();
     void pause();
@@ -37,19 +36,24 @@ signals:
 public slots:
     void onFrameCaptured(const QVideoFrame &videoFrame);
     void onImage(const QImage &image);
+    void startCapture(bool scan_ur = false);
 
 private slots:
     void onDecoded(const QString &data);
-    QImage videoFrameToImage(const QVideoFrame &videoFrame);
-    std::string getURData();
-    std::string getURType();
-    QString getURError();
 
 private:
     bool m_scan_ur = false;
     bool m_done = false;
-    bool m_handleFrames = true;
+    bool m_initialized = false;
     ScanThread *m_thread;
     ur::URDecoder m_decoder;
+
+    QImage videoFrameToImage(const QVideoFrame &videoFrame);
+    std::string getURData();
+    std::string getURType();
+    QString getURError();
+protected:
+    bool m_handleFrames = true;
+    void init();
 };
 #endif // URRECEIVER_H

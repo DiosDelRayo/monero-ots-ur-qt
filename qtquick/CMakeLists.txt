@@ -3,12 +3,14 @@ set(URREGISTER_SOURCE
     UrReceiver.cpp
     UrSender.cpp
     UrImageProvider.cpp
+    UrCodeScanner.cpp
 )
 set(URREGISTER_HEADERS
     UrRegister.h
     UrReceiver.h
     UrSender.h
     UrImageProvider.h
+    UrCodeScanner.h
 )
 if (QT_VERSION_MAJOR EQUAL 6)
     find_package(Qt6 COMPONENTS Core Gui Widgets MultimediaWidgets QUIET)

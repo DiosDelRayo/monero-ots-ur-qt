@@ -2,8 +2,14 @@
 
 UrReceiver::UrReceiver()
 	: QObject()
-	, m_thread(new ScanThread(this))
 {
+}
+
+void UrReceiver::init() {
+    if(m_initialized)
+        return;
+    m_initialized = true;
+    m_thread = new ScanThread(this);
     connect(m_thread, &ScanThread::decoded, this, &UrReceiver::onDecoded);
 }
 
