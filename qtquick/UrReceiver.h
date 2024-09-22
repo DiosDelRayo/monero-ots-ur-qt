@@ -17,9 +17,9 @@ public:
     UrReceiver();
 	~UrReceiver() override;
     
-    void reset();
-    void stop();
-    void pause();
+    Q_INVOKABLE void reset();
+    Q_INVOKABLE void stop();
+    Q_INVOKABLE void pause();
 
 signals:
     void qrDataReceived(const QString &data);
@@ -30,8 +30,8 @@ signals:
     void scannedFrames(int count, int total);
     void estimatedCompletedPercentage(float complete);
 
-	void urCaptureStarted();
-	void qrCaptureStarted();
+    void urCaptureStarted();
+    void qrCaptureStarted();
 
 public slots:
     void onFrameCaptured(const QVideoFrame &videoFrame);
@@ -44,7 +44,6 @@ private slots:
 private:
     bool m_scan_ur = false;
     bool m_done = false;
-    bool m_initialized = false;
     ScanThread *m_thread;
     ur::URDecoder m_decoder;
 

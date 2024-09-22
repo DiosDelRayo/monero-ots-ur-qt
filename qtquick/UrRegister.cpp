@@ -8,8 +8,6 @@
 #include "UrImageProvider.h"
 #include "qqmlcontext.h"
 
-Q_DECLARE_METATYPE(UrCodeScanner)
-
 namespace OtsUr {
 
     static UrSender* _urSender = nullptr;
@@ -18,6 +16,7 @@ namespace OtsUr {
 	{
 		qmlRegisterType<UrReceiver>("OtsUr", 0, 1, "UrReceiver");
 		qmlRegisterType<UrSender>("OtsUr", 0, 1, "UrSender");
+        qmlRegisterType<UrCodeScanner>("OtsUr", 0, 1, "UrCodeScannerImpl");
     }
 
     void setupContext(QQmlApplicationEngine &engine) {
@@ -33,14 +32,33 @@ namespace OtsUr {
         QObject *urCamera = engine.rootObjects().first()->findChild<QObject*>("urCamera");
         if (!urCamera)
         {
-            qCritical() << "QrCodeScanner : something went wrong !";
+            qCritical() << "UrCodeScanner : couldn't get camera !";
             return;
         }
-        qWarning() << "QrCodeScanner : object found";
-        QCamera *camera_ = qvariant_cast<QCamera*>(urCamera->property("mediaObject"));
-        QObject *urFinder = engine.rootObjects().first()->findChild<QObject*>("QrFinder");
-        qobject_cast<UrCodeScanner*>(urFinder)->setSource(camera_);
-        engine.rootContext()->setContextProperty("urScanner", urFinder);
+        qWarning() << "UrCodeScanner : object found";
+        QCamera *camera = qvariant_cast<QCamera*>(urCamera->property("mediaObject"));
+        if(!camera) {
+            qCritical() << "UrCodeScanner : couldn't cast camera !";
+            return;
+        }
+        qWarning() << "UrCodeScanner : got Camera";
+        QObject *urScanner = engine.rootObjects().first()->findChild<QObject*>("urScanner");
+        if(!urScanner) {
+            qCritical() << "UrCodeScanner : couldn't get scanner !";
+            return;
+        }
+        UrCodeScanner *scanner = qobject_cast<UrCodeScanner*>(urScanner);
+        if(!scanner) {
+            qCritical() << "UrCodeScanner : couldn't cast scanner !";
+            return;
+        }
+        qWarning() << "UrCodeScanner : got Scanner" << scanner;
+        scanner->init();
+        // UrCodeScanner *scanner = new UrCodeScanner();
+        qWarning() << "UrCodeScanner : initialized Scanner";
+        scanner->setSource(camera);
+        qWarning() << "UrCodeScanner : connected";
+        engine.rootContext()->setContextProperty("urScannerObj", scanner);
+        qWarning() << "UrCodeScanner : set urScanner";
     }
 }
-
