@@ -1,5 +1,9 @@
 #ifndef URSENDER_H
 #define URSENDER_H
+#define XMR_OUTPUT "xmr-output" // 610
+#define XMR_KEY_IMAGE "xmr-keyimage" // 611
+#define XMR_TX_UNSIGNED "xmr-txunsigned" // 612
+#define XMR_TX_SIGNED "xmr-txsigned" // 613
 
 #include <QTimer>
 #include <QrCode.h>
@@ -9,22 +13,45 @@ class UrSender : public QObject
 {
 	Q_OBJECT
 	Q_PROPERTY(QString currentFrameInfo READ currentFrameInfo NOTIFY currentFrameInfoChanged)
+    Q_PROPERTY(bool isUrCode READ isUrCode NOTIFY isUrCodeChanged)
 
 public:
 	explicit UrSender();
 	~UrSender();
     QString currentFrameInfo() const { return m_currentFrameInfo; }
 	QImage requestImage(const QString &id, QSize *size, const QSize &requestedSize);
+    Q_INVOKABLE bool isUrCode() { return !m_data.empty(); }
+    Q_INVOKABLE void sendClear();
+    Q_INVOKABLE void sendOutputs(const QString &outputs);
+    Q_INVOKABLE void sendKeyImages(const QString &keyImages);
+    Q_INVOKABLE void sendTxUnsigned(const QString &txUnisgned);
+    Q_INVOKABLE void sendTxSigned(const QString &txSigned);
+    Q_INVOKABLE void sendQrCode(const QString &qr);
+    Q_INVOKABLE void sendTx(
+        const QString &address,
+        const QString &txAmount = "",
+        const QString &txPaymentId = "",
+        const QString &recipientName = "",
+        const QString &txDescription = ""
+    );
+    Q_INVOKABLE void sendWallet(
+        const QString &address,
+        const QString &spendKey = "",
+        const QString &viewKey = "",
+        const QString &mnemonicSeed = "",
+        const long &height = 0
+    );
 
 signals:
     void updateQrCode(const QrCode &qrCode);
     void updateCurrentFrameInfo(int current, int total);
     void currentFrameInfoChanged();
+    void noFrameInfo();
+    void isUrCodeChanged();
 
 public slots:
     void onSettingsChanged(int fragmentLength, int speed, bool fountainCodeEnabled);
-    void setData(const QString &type, const std::string &data);
-	void test();
+    void setData(const QString &type, const QString &data);
 
 private slots:
     void nextQR();
@@ -40,6 +67,7 @@ private:
     int currentIndex = 0;
 #endif
     
+    const QString buildUri(const QString &scheme, const QString &address, const QMap<QString, QString> &data);
     QrCode *m_qrcode = nullptr;
     std::string m_data;
     QString m_type;

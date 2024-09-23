@@ -32,4 +32,5 @@ target_link_libraries(urregister PUBLIC
     qrcode
     bcur
     qrencode
+    otsuri
 )
