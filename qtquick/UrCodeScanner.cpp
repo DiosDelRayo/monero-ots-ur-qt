@@ -116,8 +116,8 @@ void UrCodeScanner::onDecoded(const QString &data) {
                 emit urDataFailed(getURError());
             return;
         }
-        QString ur_type = QString::fromStdString(getURType()).toLower();
-        std::string ur_data = getURData();
+        QString ur_type = getURType().toLower();
+        QString ur_data = getURData();
         emit urDataReceived(ur_type, ur_data); // providing the raw data independent if ur_type matches.
         if(!m_data_type.isEmpty() && m_data_type != ur_type)
             emit unexpectedUrType(ur_type);
@@ -132,7 +132,7 @@ void UrCodeScanner::onDecoded(const QString &data) {
     }
 }
 
-std::string UrCodeScanner::getURData() {
+QString UrCodeScanner::getURData() {
     if (!m_decoder.is_success())
         return "";
     ur::ByteVector cbor = m_decoder.result_ur().cbor();
@@ -140,13 +140,13 @@ std::string UrCodeScanner::getURData() {
     auto i = cbor.begin();
     auto end = cbor.end();
     ur::CborLite::decodeBytes(i, end, data);
-    return data;
+    return QString::fromStdString(data);
 }
 
-std::string UrCodeScanner::getURType() {
+QString UrCodeScanner::getURType() {
     if (!m_decoder.is_success())
         return "";
-    return m_decoder.expected_type().value_or("");
+    return QString::fromStdString(m_decoder.expected_type().value_or(""));
 }
 
 QString UrCodeScanner::getURError() {

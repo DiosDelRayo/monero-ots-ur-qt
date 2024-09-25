@@ -48,14 +48,14 @@ public:
     void setSource(QCamera *source);
 
 signals:
-    void outputs(const std::string &outputs);
-    void keyImages(const std::string &keyImages);
-    void unsignedTx(const std::string &unsignedTx);
-    void signedTx(const std::string &signedTx);
+    void outputs(const QString &outputs);
+    void keyImages(const QString &keyImages);
+    void unsignedTx(const QString &unsignedTx);
+    void signedTx(const QString &signedTx);
     void wallet(MoneroWalletData* walletData);
     void txData(MoneroTxData* txData);
     void qrDataReceived(const QString &data);
-    void urDataReceived(const QString &type, const std::string &data);
+    void urDataReceived(const QString &type, const QString &data);
     void urDataFailed(const QString &errorMsg);
     void receivedFrames(int count);
     void expectedFrames(int total);
@@ -79,7 +79,7 @@ private slots:
 
 private:
     bool m_scan_ur = false;
-    QString m_data_type = ""; // expected UR type
+    QString m_data_type = QR_ANY;
     bool m_done = false;
     ScanThread *m_thread;
     ur::URDecoder m_decoder;
