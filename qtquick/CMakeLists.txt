@@ -11,6 +11,7 @@ set(URREGISTER_HEADERS
     UrSender.h
     UrImageProvider.h
     UrCodeScanner.h
+    UrTypes.h
 )
 if (QT_VERSION_MAJOR EQUAL 6)
     find_package(Qt6 COMPONENTS Core Gui Widgets MultimediaWidgets QUIET)

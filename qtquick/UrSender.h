@@ -1,10 +1,7 @@
 #ifndef URSENDER_H
 #define URSENDER_H
-#define XMR_OUTPUT "xmr-output" // 610
-#define XMR_KEY_IMAGE "xmr-keyimage" // 611
-#define XMR_TX_UNSIGNED "xmr-txunsigned" // 612
-#define XMR_TX_SIGNED "xmr-txsigned" // 613
 
+#include "UrTypes.h"
 #include <QTimer>
 #include <QrCode.h>
 #include <bc-ur.hpp>

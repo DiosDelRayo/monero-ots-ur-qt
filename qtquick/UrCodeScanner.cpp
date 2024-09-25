@@ -1,4 +1,5 @@
 #include "UrCodeScanner.h"
+#include "UrTypes.h"
 #include <QVideoProbe>
 #include <QCamera>
 
@@ -13,12 +14,6 @@ void UrCodeScanner::init() {
     m_probe = new QVideoProbe(this);
     connect(m_thread, &ScanThread::decoded, this, &UrCodeScanner::onDecoded);
     connect(m_probe, &QVideoProbe::videoFrameProbed, this, &UrCodeScanner::onFrameCaptured);
-    // for backward compability
-    /* TODO: could cause a loop
-    connect(this, &UrCodeScanner::qrDataReceived, this, [this](const QString &data){
-        emit this->decoded(data);
-    });
-*/
 }
 
 void UrCodeScanner::setSource(QCamera *source)
@@ -29,19 +24,11 @@ void UrCodeScanner::setSource(QCamera *source)
     }
 }
 
-// only Qr Scanning for backwards compability
-void UrCodeScanner::setEnabled(bool enabled)
-{
-    if(m_handleFrames)
-        this->stop();
-    else
-        this->startCapture(false);
-    emit enabledChanged();
-}
-
-void UrCodeScanner::startCapture(bool scan_ur) {
+void UrCodeScanner::startCapture(bool scan_ur, const QString &ur_type) {
+    if(!ur_type.isEmpty())
+        m_ur_type = ur_type;
     if(scan_ur)
-       emit urCaptureStarted();
+       emit urCaptureStarted(m_ur_type);
     else
        emit qrCaptureStarted();
 	emit estimatedCompletedPercentage(0.0);
@@ -59,9 +46,6 @@ void UrCodeScanner::reset() {
 
 void UrCodeScanner::stop() {
     m_thread->stop();
-}
-
-void UrCodeScanner::pause() {
     m_handleFrames = false;
 }
 
@@ -98,30 +82,34 @@ void UrCodeScanner::onImage(const QImage &image) {
 }
 
 void UrCodeScanner::onDecoded(const QString &data) {
-    qWarning() << "QR DATA: " << data;
+    qWarning() << "QR FRAME DATA: " << data;
     if (m_done)
         return;
-    if (m_scan_ur) {
-        bool success = m_decoder.receive_part(data.toStdString());
-        if (!success)
-            return;
-        emit receivedFrames(m_decoder.received_part_indexes().size());
-        emit expectedFrames(m_decoder.expected_part_count());
-        emit scannedFrames(m_decoder.received_part_indexes().size(), m_decoder.expected_part_count());
-        emit estimatedCompletedPercentage(m_decoder.estimated_percent_complete());
-        if (m_decoder.is_complete()) {
-            m_done = true;
-            m_thread->stop();
-            if(m_decoder.is_success())
-                emit urDataReceived(QString::fromStdString(getURType()), getURData());
-            else if(m_decoder.is_failure())
-                emit urDataFailed(getURError());
-        }
+    if (!m_scan_ur) { // scan only a QR code
+        m_done = true;
+        m_thread->stop();
+        emit qrDataReceived(data);
         return;
     }
-    m_done = true;
-    m_thread->stop();
-    emit qrDataReceived(data);
+    if(!m_ur_type.isEmpty() && !data.startsWith("ur:" + m_ur_type)) { //check for type
+        emit unexpectedUrType(extractUrType(data));
+        return;
+    }
+    bool success = m_decoder.receive_part(data.toStdString());
+    if (!success)
+        return;
+    emit receivedFrames(m_decoder.received_part_indexes().size());
+    emit expectedFrames(m_decoder.expected_part_count());
+    emit scannedFrames(m_decoder.received_part_indexes().size(), m_decoder.expected_part_count());
+    emit estimatedCompletedPercentage(m_decoder.estimated_percent_complete());
+    if (m_decoder.is_complete()) {
+        m_done = true;
+        m_thread->stop();
+        if(m_decoder.is_success())
+            emit urDataReceived(QString::fromStdString(getURType()).toLower(), getURData());
+        else if(m_decoder.is_failure())
+            emit urDataFailed(getURError());
+    }
 }
 
 std::string UrCodeScanner::getURData() {
@@ -156,4 +144,10 @@ UrCodeScanner::~UrCodeScanner() {
         m_thread->wait();
     }
     delete m_probe;
+}
+
+QString extractUrType(const QString& qrFrame) {
+    if (!qrFrame.startsWith("ur:") || !qrFrame.contains('/'))
+        return "";
+    return qrFrame.mid(3, qrFrame.indexOf('/') - 3);
 }
