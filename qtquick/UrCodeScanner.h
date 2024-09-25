@@ -85,8 +85,8 @@ private:
     ur::URDecoder m_decoder;
 
     QImage videoFrameToImage(const QVideoFrame &videoFrame);
-    std::string getURData();
-    std::string getURType();
+    QString getURData();
+    QString getURType();
     QString getURError();
 
 protected:
