@@ -6,7 +6,7 @@
 #include "UrCodeScanner.h"
 #include "UrSender.h"
 #include "UrImageProvider.h"
-#include "../uri/MoneroUri.h"
+#include <MoneroData.h>
 #include "qqmlcontext.h"
 
 namespace OtsUr {
@@ -18,7 +18,7 @@ namespace OtsUr {
 		qmlRegisterType<UrReceiver>("OtsUr", 0, 1, "UrReceiver");
 		qmlRegisterType<UrSender>("OtsUr", 0, 1, "UrSender");
         qmlRegisterType<UrCodeScanner>("OtsUr", 0, 1, "UrCodeScannerImpl");
-        qmlRegisterType<MoneroUri>("OtsUr", 0, 1, "MoneroUri");
+        qmlRegisterType<MoneroData>("OtsUr", 0, 1, "MoneroData");
         qmlRegisterType<MoneroTxData>("OtsUr", 0, 1, "MoneroTxData");
         qmlRegisterType<MoneroWalletData>("OtsUr", 0, 1, "MoneroWalletData");
     }

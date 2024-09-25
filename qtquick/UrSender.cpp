@@ -5,7 +5,7 @@
 #include <QMap>
 
 #include "UrSender.h"
-#include "UrTypes.h"
+#include <UrTypes.h>
 
 UrSender::UrSender()
     : QObject()

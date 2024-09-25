@@ -13,7 +13,7 @@ add_subdirectory(display)
 add_subdirectory(scan)
 add_subdirectory(qrcode)
 add_subdirectory(framestate)
-add_subdirectory(uri)
+add_subdirectory(monerodata)
 
 if(NOT DEFINED USE_EXTERNAL_QRENCODE OR NOT USE_EXTERNAL_QRENCODE)
     add_subdirectory(qrencode)

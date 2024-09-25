@@ -1,7 +1,6 @@
 #ifndef URSENDER_H
 #define URSENDER_H
 
-#include "UrTypes.h"
 #include <QTimer>
 #include <QrCode.h>
 #include <bc-ur.hpp>

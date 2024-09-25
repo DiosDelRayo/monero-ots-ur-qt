@@ -1,10 +1,11 @@
 set(QRCODE_SOURCE
-	MoneroUri.cpp
+    MoneroData.cpp
 )
 set(QRCODE_HEADERS
-	MoneroUri.h
+    MoneroData.h
     MoneroTxData.h
     MoneroWalletData.h
+    UrTypes.h
 )
 
 if (QT_VERSION_MAJOR EQUAL 6)
@@ -14,9 +15,9 @@ else()
 endif()
 message("qrcode Qt version: " ${QT_VERSION} "(Qt" ${QT_VERSION_MAJOR} ")")
 
-add_library(otsuri STATIC ${QRCODE_SOURCE} ${QRCODE_HEADERS})
-target_include_directories(otsuri PUBLIC 
+add_library(otsdata STATIC ${QRCODE_SOURCE} ${QRCODE_HEADERS})
+target_include_directories(otsdata PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(otsuri PRIVATE
+target_link_libraries(otsdata PRIVATE
     Qt${QT_VERSION_MAJOR}::Core
 )

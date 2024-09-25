@@ -1,7 +1,14 @@
 #ifndef URCODESCANNER_h
 #define URCODESCANNER_h
 
-#include "UrTypes.h"
+#define QR_WALLET "wallet"
+#define QR_TX_DATA "txdata"
+#define QR_ANY ""
+#define MODE_QR false
+#define MODE_UR true
+
+#include <UrTypes.h>
+#include <MoneroData.h>
 #include <QImage>
 #include <QVideoFrame>
 #include <string>
@@ -17,6 +24,7 @@ class UrCodeScanner: public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QCamera* source READ source WRITE setSource NOTIFY sourceChanged)
+    Q_PROPERTY(bool fallbackToJson READ fallbackToJson WRITE setFallbackToJson NOTIFY fallbackToJsonChanged)
 
 public:
     UrCodeScanner();
@@ -25,17 +33,27 @@ public:
 
     QCamera* source() { return m_camera; }
     
-    Q_INVOKABLE void reset();
-    Q_INVOKABLE void stop();
-    Q_INVOKABLE void startCapture(bool scan_ur = false, const QString &ur_type = "");
-    Q_INVOKABLE void outputs() { startCapture(true, XMR_OUTPUT); }
-    Q_INVOKABLE void keyImages() { startCapture(true, XMR_KEY_IMAGE); }
-    Q_INVOKABLE void unsignedTx() { startCapture(true, XMR_TX_UNSIGNED); }
-    Q_INVOKABLE void signedTx() { startCapture(true, XMR_TX_SIGNED); }
-    Q_INVOKABLE void qr() { startCapture(false, ""); }
+    Q_INVOKABLE void reset(); // reset scanner because data was invalid
+    Q_INVOKABLE void stop(); // stop scanning
+    Q_INVOKABLE void startCapture(bool scan_ur = MODE_QR, const QString &data_type = QR_ANY);
+    Q_INVOKABLE void scanOutputs() { startCapture(MODE_UR, XMR_OUTPUT); }
+    Q_INVOKABLE void scanKeyImages() { startCapture(MODE_UR, XMR_KEY_IMAGE); }
+    Q_INVOKABLE void scanUnsignedTx() { startCapture(MODE_UR, XMR_TX_UNSIGNED); }
+    Q_INVOKABLE void scanSignedTx() { startCapture(MODE_UR, XMR_TX_SIGNED); }
+    Q_INVOKABLE void scanWallet() { startCapture(MODE_QR, "wallet"); }
+    Q_INVOKABLE void scanTxData() { startCapture(MODE_QR, "txdata"); }
+    Q_INVOKABLE void qr() { startCapture(MODE_QR, QR_ANY); }
+    bool fallbackToJson() { return m_fallbackToJson; }
+    void setFallbackToJson(bool on) { m_fallbackToJson = on; emit fallbackToJsonChanged(); }
     void setSource(QCamera *source);
 
 signals:
+    void outputs(const std::string &outputs);
+    void keyImages(const std::string &keyImages);
+    void unsignedTx(const std::string &unsignedTx);
+    void signedTx(const std::string &signedTx);
+    void wallet(MoneroWalletData* walletData);
+    void txData(MoneroTxData* txData);
     void qrDataReceived(const QString &data);
     void urDataReceived(const QString &type, const std::string &data);
     void urDataFailed(const QString &errorMsg);
@@ -49,6 +67,7 @@ signals:
     void qrCaptureStarted();
 
     void sourceChanged();
+    void fallbackToJsonChanged();
     void notifyError(const QString &error, bool warning = false);
 
 public slots:
@@ -60,7 +79,7 @@ private slots:
 
 private:
     bool m_scan_ur = false;
-    QString m_ur_type = ""; // expected UR type
+    QString m_data_type = ""; // expected UR type
     bool m_done = false;
     ScanThread *m_thread;
     ur::URDecoder m_decoder;
@@ -72,6 +91,7 @@ private:
 
 protected:
     static QString extractUrType(const QString& qrFrame);
+    bool m_fallbackToJson = true;
     bool m_handleFrames = true;
     QVideoProbe *m_probe;
     QCamera *m_camera = nullptr;

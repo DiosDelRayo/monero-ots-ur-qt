@@ -1,10 +1,12 @@
 #include "UrCodeScanner.h"
-#include "UrTypes.h"
+#include <UrTypes.h>
 #include <QVideoProbe>
 #include <QCamera>
 
 UrCodeScanner::UrCodeScanner()
     : QObject()
+    , m_scan_ur(MODE_QR)
+    , m_data_type(QR_ANY)
 {
     this->init();
 }
@@ -24,11 +26,11 @@ void UrCodeScanner::setSource(QCamera *source)
     }
 }
 
-void UrCodeScanner::startCapture(bool scan_ur, const QString &ur_type) {
-    if(!ur_type.isEmpty())
-        m_ur_type = ur_type;
+void UrCodeScanner::startCapture(bool scan_ur, const QString &dat_type) {
+    if(!dat_type.isEmpty())
+        m_data_type = dat_type;
     if(scan_ur)
-       emit urCaptureStarted(m_ur_type);
+       emit urCaptureStarted(m_data_type);
     else
        emit qrCaptureStarted();
 	emit estimatedCompletedPercentage(0.0);
@@ -89,9 +91,13 @@ void UrCodeScanner::onDecoded(const QString &data) {
         m_done = true;
         m_thread->stop();
         emit qrDataReceived(data);
+        if (m_data_type == QR_WALLET)
+            emit wallet(MoneroData::parseWalletData(data, m_fallbackToJson));
+        if (m_data_type == QR_TX_DATA)
+            emit txData(MoneroData::parseTxData(data, m_fallbackToJson));
         return;
     }
-    if(!m_ur_type.isEmpty() && !data.startsWith("ur:" + m_ur_type)) { //check for type
+    if(!m_data_type.isEmpty() && !data.startsWith("ur:" + m_data_type)) { //check for type
         emit unexpectedUrType(extractUrType(data));
         return;
     }
@@ -105,10 +111,24 @@ void UrCodeScanner::onDecoded(const QString &data) {
     if (m_decoder.is_complete()) {
         m_done = true;
         m_thread->stop();
-        if(m_decoder.is_success())
-            emit urDataReceived(QString::fromStdString(getURType()).toLower(), getURData());
-        else if(m_decoder.is_failure())
-            emit urDataFailed(getURError());
+        if(!m_decoder.is_success()) {
+            if(m_decoder.is_failure())
+                emit urDataFailed(getURError());
+            return;
+        }
+        QString ur_type = QString::fromStdString(getURType()).toLower();
+        std::string ur_data = getURData();
+        emit urDataReceived(ur_type, ur_data); // providing the raw data independent if ur_type matches.
+        if(!m_data_type.isEmpty() && m_data_type != ur_type)
+            emit unexpectedUrType(ur_type);
+        if(ur_type == XMR_OUTPUT)
+            emit outputs(ur_data);
+        if(ur_type == XMR_KEY_IMAGE)
+            emit keyImages(ur_data);
+        if(ur_type == XMR_TX_UNSIGNED)
+            emit unsignedTx(ur_data);
+        if(ur_type == XMR_TX_SIGNED)
+            emit signedTx(ur_data);
     }
 }
 
@@ -146,7 +166,7 @@ UrCodeScanner::~UrCodeScanner() {
     delete m_probe;
 }
 
-QString extractUrType(const QString& qrFrame) {
+QString UrCodeScanner::extractUrType(const QString& qrFrame) {
     if (!qrFrame.startsWith("ur:") || !qrFrame.contains('/'))
         return "";
     return qrFrame.mid(3, qrFrame.indexOf('/') - 3);
