@@ -26,9 +26,10 @@ void UrCodeScanner::setSource(QCamera *source)
     }
 }
 
-void UrCodeScanner::startCapture(bool scan_ur, const QString &dat_type) {
-    if(!dat_type.isEmpty())
-        m_data_type = dat_type;
+void UrCodeScanner::startCapture(bool scan_ur, const QString &data_type) {
+    qWarning() << "startCapture: " << (scan_ur?"UR":"QR") << " type: " << data_type;
+    if(!data_type.isEmpty())
+        m_data_type = data_type;
     if(scan_ur)
        emit urCaptureStarted(m_data_type);
     else
@@ -37,6 +38,9 @@ void UrCodeScanner::startCapture(bool scan_ur, const QString &dat_type) {
     if (!m_thread->isRunning()) {
         m_thread->start();
     }
+    m_done = false;
+    m_decoder = ur::URDecoder();
+    m_handleFrames = true;
 }
 
 void UrCodeScanner::reset() {
@@ -74,6 +78,7 @@ QImage UrCodeScanner::videoFrameToImage(const QVideoFrame &videoFrame)
 }
 
 void UrCodeScanner::onImage(const QImage &image) {
+    qWarning() << "onImage: " << image;
     if (!m_handleFrames || !m_thread->isRunning())
         return;
     if (image.format() == QImage::Format_ARGB32) {

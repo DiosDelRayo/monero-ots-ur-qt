@@ -8,12 +8,9 @@ MoneroData::MoneroData(QObject *parent) : QObject(parent) {}
 
 MoneroData::~MoneroData() {}
 
-MoneroTxData *MoneroData::parseTxData(const QString &data, bool fallbackToJson)
+MoneroTxData *MoneroData::parseTxData(const QString &data)
 {
-    MoneroTxData* out = parseTxDataUri(data);
-    if(out == nullptr && fallbackToJson)
-        out = parseTxDataJson(data);
-    return out;
+    return parseTxDataUri(data);
 }
 
 MoneroWalletData *MoneroData::parseWalletData(const QString &data, bool fallbackToJson)
@@ -21,6 +18,7 @@ MoneroWalletData *MoneroData::parseWalletData(const QString &data, bool fallback
     MoneroWalletData* out = parseWalletDataUri(data);
     if(out == nullptr && fallbackToJson)
         out = parseWalletDataJson(data);
+    qWarning() << "Wallet Data: " << out;
     return out;
 }
 
@@ -28,118 +26,89 @@ MoneroTxData* MoneroData::parseTxDataUri(const QString &uri) {
     QUrl url(uri);
     if (url.scheme()!= "monero")
         return nullptr; // invalid scheme
-    MoneroTxData* data = new MoneroTxData(url.path());
+    MoneroTxData* data = new MoneroTxData();
+    data->setAddress(url.path());
     QUrlQuery query(url.query());
-    data->setTxPaymentId(query.queryItemValue("tx_payment_id"));
-    data->setRecipientName(query.queryItemValue("recipient_name"));
-    data->setTxAmount(query.queryItemValue("tx_amount"));
-    data->setTxDescription(query.queryItemValue("tx_description"));
+    data->setTxPaymentId(query.queryItemValue(URI_TX_PARAM_PAYMENT_ID));
+    data->setRecipientName(query.queryItemValue(URI_TX_PARAM_RECIPIENT_NAME));
+    data->setTxAmount(query.queryItemValue(URI_TX_PARAM_TX_AMOUNT));
+    data->setTxDescription(query.queryItemValue(URI_TX_PARAM_TX_DESCRIPTION));
     return data;
 }
 
 MoneroWalletData* MoneroData::parseWalletDataUri(const QString &uri) {
-    QUrl url(uri);
-    if (url.scheme()!= "monero_wallet")
+    qWarning() << "parseWalletDataUri: " << uri;
+    QUrl url(uri.trimmed().replace(URI_WALLET_CURRENT_BAD_SCHEME, URI_WALLET_CORRECT_SCHEME)); // fix broken monero_wallet scheme, us trimmed to get a non-const QString for replace. Even if it get's corrected it would need to stay for backward compability.
+    qWarning() << "url scheme: " << url.scheme() << " path: " << url.path();
+    if (url.scheme()!= URI_WALLET_CORRECT_SCHEME)
         return nullptr; // invalid scheme
-    MoneroWalletData* data = new MoneroWalletData(url.path());
+    MoneroWalletData* data = new MoneroWalletData();
+    data->setAddress(url.path());
     QUrlQuery query(url.query());
-    data->setSpendKey(query.queryItemValue("spend_key"));
-    data->setViewKey(query.queryItemValue("view_key"));
-    data->setMnemonicSeed(query.queryItemValue("mnemonic_seed"));
-    data->setHeight(query.queryItemValue("height").toInt());
+    data->setSpendKey(query.queryItemValue(URI_WALLET_PARAM_SPEND_KEY));
+    data->setViewKey(query.queryItemValue(URI_WALLET_PARAM_VIEW_KEY));
+    data->setMnemonicSeed(query.queryItemValue(URI_WALLET_PARAM_MNEMONIC_SEED));
+    data->setHeight(query.queryItemValue(URI_WALLET_PARAM_HEIGHT).toInt());
     return data;
 }
 
 QString MoneroData::buildTxDataUri(MoneroTxData &data) {
     QUrl url;
-    url.setScheme("monero");
+    url.setScheme(URI_TX_SCHEME);
     url.setPath(data.address());
     QUrlQuery query;
     if (!data.txPaymentId().isEmpty())
-        query.addQueryItem("tx_payment_id", data.txPaymentId());
+        query.addQueryItem(URI_TX_PARAM_PAYMENT_ID, data.txPaymentId());
     if (!data.recipientName().isEmpty())
-        query.addQueryItem("recipient_name", data.recipientName());
+        query.addQueryItem(URI_TX_PARAM_RECIPIENT_NAME, data.recipientName());
     if (!data.txAmount().isEmpty())
-        query.addQueryItem("tx_amount", data.txAmount());
+        query.addQueryItem(URI_TX_PARAM_TX_AMOUNT, data.txAmount());
     if (!data.txDescription().isEmpty())
-        url.setFragment(data.txDescription());
+        query.addQueryItem(URI_TX_PARAM_TX_DESCRIPTION, data.txDescription());
     url.setQuery(query);
     return url.toString();
 }
 
-QString MoneroData::buildWalletDataUri(MoneroWalletData &data) {
+QString MoneroData::buildWalletDataUri(MoneroWalletData &data, bool correctedScheme) {
     QUrl url;
-    url.setScheme("monero_wallet");
+    url.setScheme(correctedScheme?URI_WALLET_CORRECT_SCHEME:URI_WALLET_CURRENT_BAD_SCHEME);
     url.setPath(data.address());
     QUrlQuery query;
     if (!data.spendKey().isEmpty())
-        query.addQueryItem("spend_key", data.spendKey());
+        query.addQueryItem(URI_WALLET_PARAM_SPEND_KEY, data.spendKey());
     if (!data.viewKey().isEmpty())
-        query.addQueryItem("view_key", data.viewKey());
+        query.addQueryItem(URI_WALLET_PARAM_VIEW_KEY, data.viewKey());
     if (!data.mnemonicSeed().isEmpty())
-        query.addQueryItem("mnemonic_seed", data.mnemonicSeed());
+        query.addQueryItem(URI_WALLET_PARAM_MNEMONIC_SEED, data.mnemonicSeed());
     if (data.height()!= 0)
-        query.addQueryItem("height", QString::number(data.height()));
+        query.addQueryItem(URI_WALLET_PARAM_HEIGHT, QString::number(data.height()));
     url.setQuery(query);
     return url.toString();
 }
 
-MoneroTxData* MoneroData::parseTxDataJson(const QString &json) {
-    QJsonDocument doc = QJsonDocument::fromJson(json.toUtf8());
-    if (doc.isNull() || !doc.isObject())
-        return nullptr; // invalid JSON
-
-    QJsonObject obj = doc.object();
-    MoneroTxData* data = new MoneroTxData(obj["address"].toString());
-    data->setTxPaymentId(obj["tx_payment_id"].toString());
-    data->setRecipientName(obj["recipient_name"].toString());
-    data->setTxAmount(obj["tx_amount"].toString());
-    data->setTxDescription(obj["tx_description"].toString());
-    return data;
-}
-
 MoneroWalletData* MoneroData::parseWalletDataJson(const QString &json) {
+    qWarning() << "parseWalletDataJson: " << json;
     QJsonDocument doc = QJsonDocument::fromJson(json.toUtf8());
     if (doc.isNull() || !doc.isObject())
         return nullptr; // invalid JSON
-
     QJsonObject obj = doc.object();
-    MoneroWalletData* data = new MoneroWalletData(obj["address"].toString());
-    data->setSpendKey(obj["spend_key"].toString());
-    data->setViewKey(obj["view_key"].toString());
-    data->setMnemonicSeed(obj["mnemonic_seed"].toString());
-    data->setHeight(obj["height"].toInt());
+    MoneroWalletData* data = new MoneroWalletData();
+    data->setAddress(obj[JSON_WALLET_ADDRESS].toString());
+    data->setSpendKey(obj[JSON_WALLET_SPEND_KEY].toString());
+    data->setViewKey(obj[JSON_WALLET_VIEW_KEY].toString());
+    data->setHeight(obj[JSON_WALLET_HEIGHT].toInt());
     return data;
-}
-
-QString MoneroData::buildTxDataJson(MoneroTxData &data) {
-    QJsonObject obj;
-    obj["address"] = data.address();
-    if (!data.txPaymentId().isEmpty())
-        obj["tx_payment_id"] = data.txPaymentId();
-    if (!data.recipientName().isEmpty())
-        obj["recipient_name"] = data.recipientName();
-    if (!data.txAmount().isEmpty())
-        obj["tx_amount"] = data.txAmount();
-    if (!data.txDescription().isEmpty())
-        obj["tx_description"] = data.txDescription();
-
-    QJsonDocument doc(obj);
-    return QString(doc.toJson(QJsonDocument::Compact));
 }
 
 QString MoneroData::buildWalletDataJson(MoneroWalletData &data) {
     QJsonObject obj;
-    obj["address"] = data.address();
+    obj[JSON_WALLET_ADDRESS] = data.address();
     if (!data.spendKey().isEmpty())
-        obj["spend_key"] = data.spendKey();
+        obj[JSON_WALLET_SPEND_KEY] = data.spendKey();
     if (!data.viewKey().isEmpty())
-        obj["view_key"] = data.viewKey();
-    if (!data.mnemonicSeed().isEmpty())
-        obj["mnemonic_seed"] = data.mnemonicSeed();
+        obj[JSON_WALLET_VIEW_KEY] = data.viewKey();
     if (data.height() != 0)
-        obj["height"] = data.height();
-
+        obj[JSON_WALLET_HEIGHT] = data.height();
     QJsonDocument doc(obj);
     return QString(doc.toJson(QJsonDocument::Compact));
 }

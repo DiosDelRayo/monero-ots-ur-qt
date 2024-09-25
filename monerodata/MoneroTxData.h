@@ -10,6 +10,7 @@ class MoneroTxData : public QObject {
     Q_PROPERTY(QString recipientName READ recipientName WRITE setRecipientName FINAL)
     Q_PROPERTY(QString txAmount READ txAmount WRITE setTxAmount FINAL)
     Q_PROPERTY(QString txDescription READ txDescription WRITE setTxDescription FINAL)
+    Q_PROPERTY(bool isValid READ isValid CONSTANT FINAL)
 
 public:
     MoneroTxData(
@@ -35,6 +36,7 @@ public:
     void setTxAmount(const QString value) { m_tx_amount = value; }
     QString txDescription() { return m_tx_description; }
     void setTxDescription(const QString value) { m_tx_description = value; }
+    bool isValid() { return !m_address.isEmpty(); }
 
 protected:
     QString m_address;
