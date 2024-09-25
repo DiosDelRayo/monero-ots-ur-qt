@@ -18,10 +18,10 @@ public:
 	QImage requestImage(const QString &id, QSize *size, const QSize &requestedSize);
     Q_INVOKABLE bool isUrCode() { return !m_data.empty(); }
     Q_INVOKABLE void sendClear();
-    Q_INVOKABLE void sendOutputs(const QString &outputs);
-    Q_INVOKABLE void sendKeyImages(const QString &keyImages);
-    Q_INVOKABLE void sendTxUnsigned(const QString &txUnisgned);
-    Q_INVOKABLE void sendTxSigned(const QString &txSigned);
+    Q_INVOKABLE void sendOutputs(const QByteArray &outputs);
+    Q_INVOKABLE void sendKeyImages(const QByteArray &keyImages);
+    Q_INVOKABLE void sendTxUnsigned(const QByteArray &txUnisgned);
+    Q_INVOKABLE void sendTxSigned(const QByteArray &txSigned);
     Q_INVOKABLE void sendQrCode(const QString &qr);
     Q_INVOKABLE void sendTx(
         const QString &address,
@@ -47,7 +47,7 @@ signals:
 
 public slots:
     void onSettingsChanged(int fragmentLength, int speed, bool fountainCodeEnabled);
-    void setData(const QString &type, const QString &data);
+    void setData(const QString &type, const QByteArray &data);
 
 private slots:
     void nextQR();

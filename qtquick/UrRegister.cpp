@@ -56,13 +56,8 @@ namespace OtsUr {
             qCritical() << "UrCodeScanner : couldn't cast scanner !";
             return;
         }
-        qWarning() << "UrCodeScanner : got Scanner" << scanner;
         scanner->init();
-        // UrCodeScanner *scanner = new UrCodeScanner();
-        qWarning() << "UrCodeScanner : initialized Scanner";
         scanner->setSource(camera);
-        qWarning() << "UrCodeScanner : connected";
         engine.rootContext()->setContextProperty("urScannerObj", scanner);
-        qWarning() << "UrCodeScanner : set urScanner";
     }
 }

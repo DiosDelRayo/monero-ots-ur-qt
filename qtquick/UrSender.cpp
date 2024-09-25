@@ -22,7 +22,7 @@ void UrSender::sendClear() {
     emit isUrCodeChanged();
 }
 
-void UrSender::setData(const QString &type, const QString &data) {
+void UrSender::setData(const QString &type, const QByteArray &data) {
     m_type = type;
     m_data = data.toStdString();
     emit isUrCodeChanged();
@@ -99,22 +99,22 @@ QImage UrSender::requestImage(const QString &id, QSize *size, const QSize &reque
 }
 
 
-void UrSender::sendOutputs(const QString &outputs) {
+void UrSender::sendOutputs(const QByteArray &outputs) {
     setData(XMR_OUTPUT, outputs);
 }
 
 
-void UrSender::sendKeyImages(const QString &keyImages) {
+void UrSender::sendKeyImages(const QByteArray &keyImages) {
     setData(XMR_KEY_IMAGE, keyImages);
 }
 
 
-void UrSender::sendTxUnsigned(const QString &txUnisgned) {
+void UrSender::sendTxUnsigned(const QByteArray &txUnisgned) {
     setData(XMR_TX_UNSIGNED, txUnisgned);
 }
 
 
-void UrSender::sendTxSigned(const QString &txSigned) {
+void UrSender::sendTxSigned(const QByteArray &txSigned) {
     setData(XMR_TX_SIGNED, txSigned);
 }
 

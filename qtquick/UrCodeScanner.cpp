@@ -20,14 +20,14 @@ void UrCodeScanner::init() {
 
 void UrCodeScanner::setSource(QCamera *source)
 {
-    if( source != m_camera) {
-        m_probe->setSource(source);
-        emit sourceChanged();
-    }
+    if( source == m_camera)
+        return;
+    m_probe->setSource(source);
+    emit sourceChanged();
 }
 
 void UrCodeScanner::startCapture(bool scan_ur, const QString &data_type) {
-    qWarning() << "startCapture: " << (scan_ur?"UR":"QR") << " type: " << data_type;
+    m_scan_ur = scan_ur;
     if(!data_type.isEmpty())
         m_data_type = data_type;
     if(scan_ur)
@@ -78,7 +78,6 @@ QImage UrCodeScanner::videoFrameToImage(const QVideoFrame &videoFrame)
 }
 
 void UrCodeScanner::onImage(const QImage &image) {
-    qWarning() << "onImage: " << image;
     if (!m_handleFrames || !m_thread->isRunning())
         return;
     if (image.format() == QImage::Format_ARGB32) {
@@ -89,7 +88,6 @@ void UrCodeScanner::onImage(const QImage &image) {
 }
 
 void UrCodeScanner::onDecoded(const QString &data) {
-    qWarning() << "QR FRAME DATA: " << data;
     if (m_done)
         return;
     if (!m_scan_ur) { // scan only a QR code
@@ -122,7 +120,7 @@ void UrCodeScanner::onDecoded(const QString &data) {
             return;
         }
         QString ur_type = getURType().toLower();
-        QString ur_data = getURData();
+        QByteArray ur_data = QByteArray::fromStdString(getURData());
         emit urDataReceived(ur_type, ur_data); // providing the raw data independent if ur_type matches.
         if(!m_data_type.isEmpty() && m_data_type != ur_type)
             emit unexpectedUrType(ur_type);
@@ -137,7 +135,7 @@ void UrCodeScanner::onDecoded(const QString &data) {
     }
 }
 
-QString UrCodeScanner::getURData() {
+std::string UrCodeScanner::getURData() {
     if (!m_decoder.is_success())
         return "";
     ur::ByteVector cbor = m_decoder.result_ur().cbor();
@@ -145,7 +143,7 @@ QString UrCodeScanner::getURData() {
     auto i = cbor.begin();
     auto end = cbor.end();
     ur::CborLite::decodeBytes(i, end, data);
-    return QString::fromStdString(data);
+    return data;
 }
 
 QString UrCodeScanner::getURType() {

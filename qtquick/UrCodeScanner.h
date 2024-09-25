@@ -48,14 +48,14 @@ public:
     void setSource(QCamera *source);
 
 signals:
-    void outputs(const QString &outputs);
-    void keyImages(const QString &keyImages);
-    void unsignedTx(const QString &unsignedTx);
-    void signedTx(const QString &signedTx);
+    void outputs(const QByteArray &outputs);
+    void keyImages(const QByteArray &keyImages);
+    void unsignedTx(const QByteArray &unsignedTx);
+    void signedTx(const QByteArray &signedTx);
     void wallet(MoneroWalletData* walletData);
     void txData(MoneroTxData* txData);
     void qrDataReceived(const QString &data);
-    void urDataReceived(const QString &type, const QString &data);
+    void urDataReceived(const QString &type, const QByteArray &data);
     void urDataFailed(const QString &errorMsg);
     void receivedFrames(int count);
     void expectedFrames(int total);
@@ -85,10 +85,9 @@ private:
     ur::URDecoder m_decoder;
 
     QImage videoFrameToImage(const QVideoFrame &videoFrame);
-    QString getURData();
+    std::string getURData();
     QString getURType();
     QString getURError();
-
 protected:
     static QString extractUrType(const QString& qrFrame);
     bool m_fallbackToJson = true;
