@@ -18,7 +18,6 @@ MoneroWalletData *MoneroData::parseWalletData(const QString &data, bool fallback
     MoneroWalletData* out = parseWalletDataUri(data);
     if(out == nullptr && fallbackToJson)
         out = parseWalletDataJson(data);
-    qWarning() << "Wallet Data: " << out;
     return out;
 }
 
@@ -37,9 +36,7 @@ MoneroTxData* MoneroData::parseTxDataUri(const QString &uri) {
 }
 
 MoneroWalletData* MoneroData::parseWalletDataUri(const QString &uri) {
-    qWarning() << "parseWalletDataUri: " << uri;
     QUrl url(uri.trimmed().replace(URI_WALLET_CURRENT_BAD_SCHEME, URI_WALLET_CORRECT_SCHEME)); // fix broken monero_wallet scheme, us trimmed to get a non-const QString for replace. Even if it get's corrected it would need to stay for backward compability.
-    qWarning() << "url scheme: " << url.scheme() << " path: " << url.path();
     if (url.scheme()!= URI_WALLET_CORRECT_SCHEME)
         return nullptr; // invalid scheme
     MoneroWalletData* data = new MoneroWalletData();
@@ -87,7 +84,6 @@ QString MoneroData::buildWalletDataUri(MoneroWalletData &data, bool correctedSch
 }
 
 MoneroWalletData* MoneroData::parseWalletDataJson(const QString &json) {
-    qWarning() << "parseWalletDataJson: " << json;
     QJsonDocument doc = QJsonDocument::fromJson(json.toUtf8());
     if (doc.isNull() || !doc.isObject())
         return nullptr; // invalid JSON

@@ -99,7 +99,7 @@ void UrCodeScanner::onDecoded(const QString &data) {
         if (m_data_type == QR_WALLET)
             emit wallet(MoneroData::parseWalletData(data, m_fallbackToJson));
         if (m_data_type == QR_TX_DATA)
-            emit txData(MoneroData::parseTxData(data, m_fallbackToJson));
+            emit txData(MoneroData::parseTxData(data));
         return;
     }
     if(!m_data_type.isEmpty() && !data.startsWith("ur:" + m_data_type)) { //check for type
