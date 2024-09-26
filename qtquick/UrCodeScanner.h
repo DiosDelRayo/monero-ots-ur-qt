@@ -57,6 +57,7 @@ signals:
     void qrDataReceived(const QString &data);
     void urDataReceived(const QString &type, const QByteArray &data);
     void urDataFailed(const QString &errorMsg);
+    void decodedFrame(const QString &data);
     void receivedFrames(int count);
     void expectedFrames(int total);
     void scannedFrames(int count, int total);

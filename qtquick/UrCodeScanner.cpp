@@ -88,6 +88,7 @@ void UrCodeScanner::onImage(const QImage &image) {
 }
 
 void UrCodeScanner::onDecoded(const QString &data) {
+    emit decodedFrame(data);
     if (m_done)
         return;
     if (!m_scan_ur) { // scan only a QR code
@@ -105,12 +106,12 @@ void UrCodeScanner::onDecoded(const QString &data) {
         return;
     }
     bool success = m_decoder.receive_part(data.toStdString());
-    if (!success)
-        return;
     emit receivedFrames(m_decoder.received_part_indexes().size());
     emit expectedFrames(m_decoder.expected_part_count());
     emit scannedFrames(m_decoder.received_part_indexes().size(), m_decoder.expected_part_count());
     emit estimatedCompletedPercentage(m_decoder.estimated_percent_complete());
+    if (!success)
+        return;
     if (m_decoder.is_complete()) {
         m_done = true;
         m_thread->stop();

@@ -39,13 +39,11 @@ namespace OtsUr {
             qCritical() << "UrCodeScanner : couldn't get camera !";
             return;
         }
-        qWarning() << "UrCodeScanner : object found";
         QCamera *camera = qvariant_cast<QCamera*>(urCamera->property("mediaObject"));
         if(!camera) {
             qCritical() << "UrCodeScanner : couldn't cast camera !";
             return;
         }
-        qWarning() << "UrCodeScanner : got Camera";
         QObject *urScanner = engine.rootObjects().first()->findChild<QObject*>("urScanner");
         if(!urScanner) {
             qCritical() << "UrCodeScanner : couldn't get scanner !";
